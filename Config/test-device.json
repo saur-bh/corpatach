@@ -1,0 +1,11 @@
+{
+   
+    "platformName" : "Android",
+    "platformVersion":"12",
+    "udid": "da2d87f2",
+    "appPackage": "com.corpatch.app.cps",
+    "appActivity": "com.corpatch.app_cps.app.main.MainActivity"
+
+
+
+}

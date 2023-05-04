@@ -301,4 +301,11 @@ exports.config = {
     */
     // onReload: function(oldSessionId, newSessionId) {
     // }
+
+    // ...
+    featureFlags: {
+        specFiltering: true
+    },
+
+
 }

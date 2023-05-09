@@ -1,7 +1,7 @@
 
-describe("Signup Feature",()=>{
+describe("Smoke Test",()=>{
 
-    it("should not able to  perform signup with already used email ",async()=>{
+    it("Signup Feature: should not able to  perform signup with already used email ",async()=>{
 
         const el1=await driver.$("id:onboarding_welcome_signin_button");
         await el1.click();
@@ -22,7 +22,7 @@ describe("Signup Feature",()=>{
 
     });
     
-    it("should not able to  perform signup with wrong password ",async()=>{
+    it("Signup Feature:should not able to  perform signup with wrong password ",async()=>{
 
         let el2 = await driver.$("id:signup_email_text");
         await el2.setValue("saurabh@dipostable.com");
@@ -41,7 +41,7 @@ describe("Signup Feature",()=>{
 
     });
 
-    it("should not able to  perform signup with invalid email ",async()=>{
+    it("Signup Feature: should not able to  perform signup with invalid email ",async()=>{
 
       
         let el2 = await driver.$("id:signup_email_text");
@@ -60,6 +60,5 @@ describe("Signup Feature",()=>{
         await driver.pause(10000)
 
     });
-  
 
-});
+ });

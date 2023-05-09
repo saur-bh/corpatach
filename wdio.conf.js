@@ -61,8 +61,8 @@ exports.config = {
         "appium:automationName": "UIAutomator2",
         "appium:udid": configData.udid,
         "appium:appPackage": configData.appPackage,
-        "appium:appActivity":configData.appActivity
-
+        "appium:appActivity":configData.appActivity,
+        
     }],
     //
     // ===================

@@ -39,3 +39,7 @@ https://youtu.be/bTdHXDjxMps
 
 ## Automation TestPlan
 https://docs.google.com/document/d/1N4e6vgiLFqpKwjEb5j20IJFxXynsH4jzpiYGjdAc6Ks/edit?usp=sharing
+
+## Troubleshooting 
+adb uninstall io.appium.uiautomator2.server
+adb uninstall io.appium.uiautomator2.server.test

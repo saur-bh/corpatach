@@ -1,0 +1,15 @@
+{
+  "server": {
+    "port": 4723,
+    "use-plugins": ["device-farm"],
+    "plugin": {
+      "device-farm": {
+        "platform": "both",
+        "androidDeviceType": "both",
+        "iosDeviceType": "both",
+        "skipChromeDownload": false,
+        "maxSessions": 5
+      }
+    }
+  }
+}

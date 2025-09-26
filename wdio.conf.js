@@ -1,6 +1,21 @@
 
-const path= require('path');
-const configData = require('./Config/test-device.json')
+const path = require('path');
+const fs = require('fs');
+
+// Function to load device configuration based on platform
+function loadDeviceConfig(platform) {
+    const configPath = `./Config/${platform.toLowerCase()}-device.json`;
+    if (fs.existsSync(configPath)) {
+        return require(configPath);
+    }
+    // Fallback to default config if platform-specific config doesn't exist
+    return require('./Config/test-device.json');
+}
+
+// Get platform from environment variable or default to Android
+const platform = process.env.PLATFORM || 'android';
+const configData = loadDeviceConfig(platform);
+
 exports.config = {
     //
     // ====================
@@ -47,23 +62,47 @@ exports.config = {
     // and 30 processes will get spawned. The property handles how many capabilities
     // from the same test should run tests.
     //
-    maxInstances: 10,
+    maxInstances: 1, // Reduced to 1 for mobile testing stability
     //
     // If you have trouble getting all important capabilities together, check out the
     // Sauce Labs platform configurator - a great tool to configure your capabilities:
-    // https://saucelabs.com/platform/platform-configurator
+    // https://docs.saucelabs.com/reference/platforms-configurator
     //
-    capabilities: [{
-       
-        platformName: "Android",
-        "appium:platformVersion":configData.platformVersion,
-        "appium:deviceName": configData.deviceName,
-        "appium:automationName": "UIAutomator2",
-        "appium:udid": configData.udid,
-        "appium:appPackage": configData.appPackage,
-        "appium:appActivity":configData.appActivity,
-        
-    }],
+    capabilities: [
+        // Dynamic capability configuration based on platform
+        ...(platform.toLowerCase() === 'android' ? [{
+            // Android Configuration
+            platformName: "Android",
+            "appium:platformVersion": configData.platformVersion || "12",
+            "appium:deviceName": configData.deviceName || "Android Emulator",
+            "appium:automationName": "UIAutomator2",
+            "appium:udid": configData.udid,
+            "appium:appPackage": configData.appPackage,
+            "appium:appActivity": configData.appActivity,
+            "appium:noReset": configData.noReset || false,
+            "appium:fullReset": configData.fullReset || false,
+            "appium:newCommandTimeout": 300,
+            "appium:autoGrantPermissions": true,
+            "appium:uiautomator2ServerInstallTimeout": 60000,
+            "appium:adbExecTimeout": 20000
+        }] : [{
+            // iOS Configuration
+            platformName: "iOS",
+            "appium:platformVersion": configData.platformVersion || "16.0",
+            "appium:deviceName": configData.deviceName || "iPhone 14",
+            "appium:automationName": "XCUITest",
+            "appium:udid": configData.udid,
+            "appium:bundleId": configData.bundleId,
+            "appium:app": configData.app,
+            "appium:noReset": configData.noReset || false,
+            "appium:fullReset": configData.fullReset || false,
+            "appium:newCommandTimeout": 300,
+            "appium:autoAcceptAlerts": configData.autoAcceptAlerts || false,
+            "appium:autoDismissAlerts": configData.autoDismissAlerts || false,
+            "appium:wdaLaunchTimeout": 60000,
+            "appium:wdaConnectionTimeout": 60000
+        }])
+    ],
     //
     // ===================
     // Test Configurations

@@ -1,45 +1,144 @@
-# corpatch mobile application testing using appium and webdriverio
+# ScopeX Mobile App Testing Framework
 
-The framework is based on real device for andoird 12.0 and is configurable for other version too. 
+This project provides automated testing for the **ScopeX** mobile application using WebdriverIO and Appium. Simple setup with optional Device Farm for team collaboration.
 
-## Pre-Condition 
-* Android SDK is installed on machine and there should be one working emulator with version 12. Here is link to android SDK installation: https://developer.android.com/studio?gclid=Cj0KCQjw-pCVBhCFARIsAGMxhAf1x03LhY434R4mONjHXbZeurqMdZkCYTMAkBb5Tcxuup3MKdmQtJsaAlpcEALw_wcB&gclsrc=aw.ds
-* Creating virtual device for android https://developer.android.com/studio/run/managing-avds
+## 🚀 Quick Start for New Team Members
 
-## Tech Stack 
-- Andorid SDK to work in emulators 
-- javaScript 
-- mocha framework 
-- webdriverio
-- vsCode
+### 1. Prerequisites
+- **Node.js**: v18.20.8 LTS (required)
+- **Android Studio**: For Android testing
+- **Xcode**: For iOS testing (macOS only)
 
-## UseCase which is automated 
-1. User get confirmation dialog with ETH value.
+### 2. Setup (5 minutes)
+```bash
+# Clone and install
+git clone <repository-url>
+cd corpatach
+npm install
 
-## Demo 
-https://youtu.be/bTdHXDjxMps
+# Install Appium drivers
+npx appium driver install uiautomator2@2.34.2
+npx appium driver install xcuitest@4.35.0
 
-## Setup
+# Optional: Install Device Farm (for team collaboration)
+npx appium plugin install device-farm@10.2.0
+```
 
-* Must have NodeJS and NPM installed (https://nodejs.org/en/)
-* Launch vsCode editor 
-* Goto command prompt and clone the current repository via command : git clone https://github.com/saur-bh/QA-Challenge-Mobile.git
-* Install dependencies by running `npm install` from the command prompt.
+### 3. Run Tests
+```bash
+# Simple test run (no device farm)
+npm run test:android
 
+# With Device Farm (team collaboration)
+npx appium --config device-farm-config.json  # Terminal 1
+npm run test:android                          # Terminal 2
+```
+
+## Application Details
+
+- **App Name**: ScopeX
+- **Package Name**: `com.scopex.scopexmobile`
+- **Main Activity**: `com.scopex.scopexmobile.MainActivity`
+- **Test Device**: Scopex-Test emulator (Android)
+
+## Configuration Options
+
+### Two Ways to Run Tests
+
+#### Option 1: Simple Mode (Recommended for beginners)
+- Uses `wdio.conf.js` 
+- Direct Appium connection
+- Perfect for individual development
+
+#### Option 2: Device Farm Mode (Team collaboration)
+- Uses `minimal-wdio.conf.js` with Device Farm
+- Web dashboard at `http://localhost:4723`
+- Better for team environments and CI/CD
+
+### Device Configuration
+
+Edit `Config/android-device.json` for your setup:
+```json
+{
+    "platformName": "Android",
+    "platformVersion": "15",
+    "deviceName": "Scopex-Test",
+    "udid": "emulator-5554",
+    "appPackage": "com.scopex.scopexmobile",
+    "appActivity": "com.scopex.scopexmobile.MainActivity",
+    "fullReset": false,
+    "noReset": true
+}
+```
+
+### Real Device Setup
+For real devices, update the `udid` field:
+- **Android**: Get UDID with `adb devices`
+- **iOS**: Get UDID from Xcode → Window → Devices and Simulators
+    "appPackage": "com.scopex.scopexmobile",
+    "appActivity": "com.scopex.scopexmobile.MainActivity",
 ## Running Tests
 
-* To run the tests, run `npx wdio`
+### Simple Commands
+```bash
+# Android tests (default)
+npm run test:android
 
+# iOS tests  
+npm run test:ios
 
-## Enhancement
-  * allure-results integration 
-  * Integration with CI tool i.e. Jenkins
-  * Convert to pageObject desgin pattern or gerkins 
-  * API call for setup and tearDown 
+# With Device Farm (optional)
+npx appium --config device-farm-config.json  # Terminal 1
+npm run test:android                          # Terminal 2
+```
 
-## Automation TestPlan
-https://docs.google.com/document/d/1N4e6vgiLFqpKwjEb5j20IJFxXynsH4jzpiYGjdAc6Ks/edit?usp=sharing
+## Troubleshooting
 
-## Troubleshooting 
-adb uninstall io.appium.uiautomator2.server
-adb uninstall io.appium.uiautomator2.server.test
+### Common Issues
+1. **"Device not found"**: Check `adb devices` or restart emulator
+2. **"App not installed"**: Install ScopeX APK on device/emulator
+3. **"Connection refused"**: Ensure Appium server is running
+4. **"Element not found"**: App might be on different screen than expected
+
+### Getting Help
+- Check logs in `wdio-appium.log`
+- Device Farm dashboard: `http://localhost:4723` (if using Device Farm)
+- Verify device configuration in `Config/android-device.json`
+
+## Project Structure
+```
+├── Config/                 # Device configurations
+│   ├── android-device.json # Android setup
+│   └── ios-device.json     # iOS setup
+├── test/specs/            # Test files
+├── wdio.conf.js          # Main WebDriverIO config
+├── minimal-wdio.conf.js  # Config with enhanced logging
+└── device-farm-config.json # Device Farm settings
+```
+---
+
+## For Developers
+
+### Adding New Tests
+1. Create test files in `test/specs/`
+2. Use cross-platform selectors:
+```javascript
+// Platform-specific element selection
+const getElementSelector = (androidSelector, iosSelector) => {
+    return isAndroid() ? androidSelector : iosSelector;
+};
+
+// Usage in tests
+const signinButton = getElementSelector(
+    "id:onboarding_welcome_signin_button",  // Android
+    "~onboarding_welcome_signin_button"     // iOS
+);
+```
+
+### Element Selector Strategy
+- **Android**: Use resource-id (`id:element_id`)
+- **iOS**: Use accessibility-id (`~accessibility_id`)
+
+---
+
+**Questions?** Check the logs in `wdio-appium.log` or ask the team!

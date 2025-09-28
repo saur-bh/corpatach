@@ -1,1 +1,7 @@
 node_modules
+logs/
+*.log
+chromedriver-mobile/
+uploads/
+DerivedData/
+logs

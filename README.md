@@ -13,8 +13,9 @@ This project provides automated testing for the **ScopeX** mobile application us
 ```bash
 # Clone and install
 git clone <repository-url>
-cd corpatach
+cd scopex
 npm install
+
 
 # Install Appium drivers
 npx appium driver install uiautomator2@2.34.2
@@ -66,8 +67,8 @@ Edit `Config/android-device.json` for your setup:
     "udid": "emulator-5554",
     "appPackage": "com.scopex.scopexmobile",
     "appActivity": "com.scopex.scopexmobile.MainActivity",
-    "fullReset": false,
-    "noReset": true
+    "noReset": false,
+    "fullReset": false
 }
 ```
 
@@ -90,7 +91,53 @@ npm run test:ios
 # With Device Farm (optional)
 npx appium --config device-farm-config.json  # Terminal 1
 npm run test:android                          # Terminal 2
+
+# Clear app cache/data before launch
+npm run test:android:clear
+npm run test:ios:clear
+
+# Run specific test suites (e.g., smoke)
+npm run test:smoke
+wdio wdio.conf.js --suite smoke
+
+# Repeat a suite multiple times (flakiness check)
+npm run test:smoke:repeat
+PLATFORM=android npm run test:android:smoke:repeat
+PLATFORM=ios npm run test:ios:smoke:repeat
 ```
+
+### Reset Behavior
+- The framework now defaults to launching the installed app and clearing cache/data when `noReset=false` and `fullReset=false`.
+- You can enforce reset behavior via `RESET_MODE` without editing config files:
+  - `RESET_MODE=cache`: clears app data, does not reinstall (uses `noReset=false`, `fullReset=false`).
+  - `RESET_MODE=keep`: keeps existing app data (uses `noReset=true`, `fullReset=false`).
+  - `RESET_MODE=full`: performs a full reinstall. Ensure `appium:app` (Android/iOS) is set.
+- Convenience scripts:
+  - Android: `npm run test:android:clear` (equivalent to `RESET_MODE=cache`)
+  - iOS: `npm run test:ios:clear` (equivalent to `RESET_MODE=cache`)
+
+Note: For a full reset, you must provide an `appium:app` capability pointing to the app binary (APK/IPA/.app). Without it, Appium will error with “Full reset requires an app capability…”.
+
+### Selectors Organization
+- Platform-specific locators are organized under `selectors/`:
+  - Android: `selectors/android/auth.js`
+  - iOS: `selectors/ios/auth.js`
+- In tests, import and use them via the unified entrypoint:
+```javascript
+// test/specs/smoke.js
+const { getSelectors } = require('../../selectors');
+
+it('Should able to see welcome screen', async () => {
+  const s = getSelectors();
+  const el1 = await driver.$(s.onboarding.signinButton);
+  await el1.click();
+  const email = await driver.$(s.signup.email);
+  await email.setValue('user@example.com');
+  // ...
+});
+```
+
+This keeps iOS and Android locators in separate files while allowing tests to stay identical across platforms.
 
 ## Troubleshooting
 
@@ -101,7 +148,7 @@ npm run test:android                          # Terminal 2
 4. **"Element not found"**: App might be on different screen than expected
 
 ### Getting Help
-- Check logs in `wdio-appium.log`
+- Check Appium logs in `wdio-appium.log` (git-ignored)
 - Device Farm dashboard: `http://localhost:4723` (if using Device Farm)
 - Verify device configuration in `Config/android-device.json`
 
@@ -118,6 +165,19 @@ npm run test:android                          # Terminal 2
 ---
 
 ## For Developers
+
+### Parameterize & Retry
+- Parameterize tests using data arrays or dynamic functions. Example:
+  - In `test/specs/smoke.js`, a loop runs signup with multiple passwords.
+  - Use environment variables for secrets, e.g. `process.env.USERNAME` and `process.env.PASSWORD`.
+- Mocha retries:
+  - Use `describe(function () { this.retries(2) })` (unbound function required).
+  - Per test: `it('...', async function () { this.retries(1); /* ... */ })`.
+- Global retries configured in `wdio.conf.js` and `minimal-wdio.conf.js`:
+  - `specFileRetries: 1` and `mochaOpts.retries: 1`.
+- Repeat a suite N times to catch flakiness:
+  - `wdio wdio.conf.js --suite smoke --repeat 5`.
+  - See scripts: `test:smoke:repeat`, `test:android:smoke:repeat`, `test:ios:smoke:repeat`.
 
 ### Adding New Tests
 1. Create test files in `test/specs/`

@@ -1,64 +1,41 @@
 
-// Cross-platform helper functions
-const isAndroid = () => driver.isAndroid;
-const isIOS = () => driver.isIOS;
+const { getSelectors } = require('../../selectors');
 
-// Platform-specific element selectors
-const getElementSelector = (androidSelector, iosSelector) => {
-    return isAndroid() ? androidSelector : iosSelector;
-};
+// Parameterized and retry-enabled smoke tests
+describe("Smoke Test", function () {
+    // Enable suite-level retries via Mocha (see WebdriverIO docs)
+    this.retries(2);
 
-describe("Smoke Test", () => {
+    const s = getSelectors();
+    const email = process.env.USERNAME || "saurabh@dipostable.com";
+    const passwordCases = ["Welcome@8", "Welcome@9", "Password123!"];
 
-    it("Signup Feature: should not able to perform signup with already used email", async () => {
+    for (const pwd of passwordCases) {
+        it(`Signup shows existing-email error (pwd: ${pwd})`, async function () {
+            // Allow test-level retry override if needed
+            this.retries(1);
 
-        const signinButtonSelector = getElementSelector(
-            "id:onboarding_welcome_signin_button",
-            "~onboarding_welcome_signin_button" // iOS accessibility id
-        );
-        const el1 = await driver.$(signinButtonSelector);
-        await el1.click();
+            // Go to sign-in from onboarding
+            const signinBtn = await driver.$(s.onboarding.signinButton);
+            await signinBtn.click();
 
-        const emailFieldSelector = getElementSelector(
-            "id:signup_email_text",
-            "~signup_email_text"
-        );
-        let el2 = await driver.$(emailFieldSelector);
-        await el2.setValue("saurabh@dipostable.com");
+            const emailField = await driver.$(s.signup.email);
+            await emailField.clearValue();
+            await emailField.setValue(email);
 
-        const passwordFieldSelector = getElementSelector(
-            "id:signup_password_text",
-            "~signup_password_text"
-        );
-        let el3 = await driver.$(passwordFieldSelector);
-        await el3.setValue("Welcome@8");
+            const passwordField = await driver.$(s.signup.password);
+            await passwordField.clearValue();
+            await passwordField.setValue(pwd);
 
-        const confirmPasswordFieldSelector = getElementSelector(
-            "id:signup_password_confirm_text",
-            "~signup_password_confirm_text"
-        );
-        let el4 = await driver.$(confirmPasswordFieldSelector);
-        await el4.click();
-        await el4.setValue("Welcome@8");
+            const confirmPasswordField = await driver.$(s.signup.confirmPassword);
+            await confirmPasswordField.clearValue();
+            await confirmPasswordField.setValue(pwd);
 
-        const signupButtonSelector = getElementSelector(
-            "id:signup_button",
-            "~signup_button"
-        );
-        let el5 = await driver.$(signupButtonSelector);
-        await el5.click();
+            const submitBtn = await driver.$(s.signup.submit);
+            await submitBtn.click();
 
-        const errorTextSelector = getElementSelector(
-            "id:signup_error_text",
-            "~signup_error_text"
-        );
-        const expectedText = await $(errorTextSelector);
-        await expectedText.getText();
-        console.log(expectedText);
-        await expect(expectedText).toHaveTextContaining("Email is already in use.");
-        await driver.pause(10000);
-
-    });
-
-
+            const errorTextEl = await $(s.signup.errorText);
+            await expect(errorTextEl).toHaveTextContaining("Email is already in use.");
+        });
+    }
 });

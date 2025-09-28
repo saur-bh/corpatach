@@ -15,6 +15,7 @@ function loadDeviceConfig(platform) {
 // Get platform from environment variable or default to Android
 const platform = process.env.PLATFORM || 'android';
 const configData = loadDeviceConfig(platform);
+const resetMode = (process.env.RESET_MODE || '').toLowerCase();
 
 exports.config = {
     //
@@ -42,6 +43,9 @@ exports.config = {
     specs: [
         './test/specs/**/*.js'
     ],
+    suites: {
+        smoke: ['./test/specs/smoke.js']
+    },
     // Patterns to exclude.
     exclude: [
         // 'path/to/excluded/files'
@@ -69,39 +73,60 @@ exports.config = {
     // https://docs.saucelabs.com/reference/platforms-configurator
     //
     capabilities: [
-        // Dynamic capability configuration based on platform
-        ...(platform.toLowerCase() === 'android' ? [{
-            // Android Configuration
-            platformName: "Android",
-            "appium:platformVersion": configData.platformVersion || "12",
-            "appium:deviceName": configData.deviceName || "Android Emulator",
-            "appium:automationName": "UIAutomator2",
-            "appium:udid": configData.udid,
-            "appium:appPackage": configData.appPackage,
-            "appium:appActivity": configData.appActivity,
-            "appium:noReset": configData.noReset || false,
-            "appium:fullReset": configData.fullReset || false,
-            "appium:newCommandTimeout": 300,
-            "appium:autoGrantPermissions": true,
-            "appium:uiautomator2ServerInstallTimeout": 60000,
-            "appium:adbExecTimeout": 20000
-        }] : [{
-            // iOS Configuration
-            platformName: "iOS",
-            "appium:platformVersion": configData.platformVersion || "16.0",
-            "appium:deviceName": configData.deviceName || "iPhone 14",
-            "appium:automationName": "XCUITest",
-            "appium:udid": configData.udid,
-            "appium:bundleId": configData.bundleId,
-            "appium:app": configData.app,
-            "appium:noReset": configData.noReset || false,
-            "appium:fullReset": configData.fullReset || false,
-            "appium:newCommandTimeout": 300,
-            "appium:autoAcceptAlerts": configData.autoAcceptAlerts || false,
-            "appium:autoDismissAlerts": configData.autoDismissAlerts || false,
-            "appium:wdaLaunchTimeout": 60000,
-            "appium:wdaConnectionTimeout": 60000
-        }])
+        ...(platform.toLowerCase() === 'android' ? (() => {
+            const caps = {
+                platformName: "Android",
+                "appium:platformVersion": configData.platformVersion || "12",
+                "appium:deviceName": configData.deviceName || "Android Emulator",
+                "appium:automationName": "UIAutomator2",
+                "appium:udid": configData.udid,
+                "appium:appPackage": configData.appPackage,
+                "appium:appActivity": configData.appActivity,
+                "appium:noReset": configData.noReset ?? false,
+                "appium:fullReset": configData.fullReset ?? false,
+                "appium:newCommandTimeout": 300,
+                "appium:autoGrantPermissions": true,
+                "appium:uiautomator2ServerInstallTimeout": 60000,
+                "appium:adbExecTimeout": 20000
+            };
+            if (resetMode === 'cache') {
+                caps["appium:noReset"] = false;
+                caps["appium:fullReset"] = false;
+            } else if (resetMode === 'keep') {
+                caps["appium:noReset"] = true;
+                caps["appium:fullReset"] = false;
+            } else if (resetMode === 'full') {
+                caps["appium:fullReset"] = true;
+            }
+            return [caps];
+        })() : (() => {
+            const caps = {
+                platformName: "iOS",
+                "appium:platformVersion": configData.platformVersion || "16.0",
+                "appium:deviceName": configData.deviceName || "iPhone 14",
+                "appium:automationName": "XCUITest",
+                "appium:udid": configData.udid,
+                "appium:bundleId": configData.bundleId,
+                "appium:app": configData.app,
+                "appium:noReset": configData.noReset ?? false,
+                "appium:fullReset": configData.fullReset ?? false,
+                "appium:newCommandTimeout": 300,
+                "appium:autoAcceptAlerts": configData.autoAcceptAlerts || false,
+                "appium:autoDismissAlerts": configData.autoDismissAlerts || false,
+                "appium:wdaLaunchTimeout": 60000,
+                "appium:wdaConnectionTimeout": 60000
+            };
+            if (resetMode === 'cache') {
+                caps["appium:noReset"] = false;
+                caps["appium:fullReset"] = false;
+            } else if (resetMode === 'keep') {
+                caps["appium:noReset"] = true;
+                caps["appium:fullReset"] = false;
+            } else if (resetMode === 'full') {
+                caps["appium:fullReset"] = true;
+            }
+            return [caps];
+        })())
     ],
     //
     // ===================
@@ -171,13 +196,13 @@ exports.config = {
     framework: 'mocha',
     //
     // The number of times to retry the entire specfile when it fails as a whole
-    // specFileRetries: 1,
+    specFileRetries: 1,
     //
     // Delay in seconds between the spec file retry attempts
-    // specFileRetriesDelay: 0,
+    specFileRetriesDelay: 0,
     //
     // Whether or not retried specfiles should be retried immediately or deferred to the end of the queue
-    // specFileRetriesDeferred: false,
+    specFileRetriesDeferred: false,
     //
     // Test reporter for stdout.
     // The only one supported by default is 'dot'
@@ -191,7 +216,8 @@ exports.config = {
     // See the full list at http://mochajs.org/
     mochaOpts: {
         ui: 'bdd',
-        timeout: 60000
+        timeout: 60000,
+        retries: 1
     },
     //
     // =====

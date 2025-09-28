@@ -6,7 +6,7 @@
     "bundleId": "com.corpatch.app.cps",
     "app": "/path/to/your/app.app",
     "noReset": false,
-    "fullReset": true,
+    "fullReset": false,
     "autoAcceptAlerts": false,
     "autoDismissAlerts": false
 }

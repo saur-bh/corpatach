@@ -4,7 +4,7 @@
     "deviceName": "Scopex-Test",
     "udid": "emulator-5554",
     "appPackage": "com.scopex.scopexmobile",
-    "appActivity": "com.scopex.scopexmobile.MainActivity",
-    "fullReset": false,
-    "noReset": true
+    "appActivity": ".MainActivity",
+    "noReset": false
+   
 }
